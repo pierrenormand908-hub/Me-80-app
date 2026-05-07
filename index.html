@@ -2,198 +2,210 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ME-80 Tone Master</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ME-80 Studio Pierrot</title>
     <style>
         :root {
-            --bg-color: #121212;
-            --panel-bg: #1e1e1e;
-            --boss-blue: #00aaff;
-            --boss-green: #00ff88;
+            --bg: #121212;
+            --panel: #1e1e1e;
             --boss-orange: #ffaa00;
-            --text-color: #e0e0e0;
+            --boss-blue: #00aaff;
+            --boss-red: #ff4444;
+            --text: #e0e0e0;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
+        .header { text-align: center; margin-bottom: 15px; }
+        h1 { color: var(--boss-blue); font-size: 1.2rem; text-transform: uppercase; margin: 0; }
+
+        .pedal-section {
+            background: var(--panel);
+            border-radius: 12px;
             width: 100%;
-            max-width: 800px;
+            max-width: 450px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            border-top: 4px solid #444;
         }
 
-        h1 { color: var(--boss-blue); margin: 0; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
+        .section-title {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: block;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
 
-        .patch-selector {
+        /* Couleurs spécifiques Boss */
+        .preamp { border-color: var(--boss-orange); }
+        .eqfx2 { border-color: var(--boss-blue); }
+        .reverb { border-color: var(--boss-red); }
+
+        select {
             width: 100%;
-            max-width: 400px;
-            background: var(--panel-bg);
+            padding: 10px;
+            background: #252525;
             color: white;
-            padding: 12px;
-            border-radius: 8px;
             border: 1px solid #444;
-            margin: 20px 0;
+            border-radius: 5px;
+            margin-bottom: 15px;
             font-size: 1rem;
         }
 
-        .pedalier {
+        .knobs-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            width: 100%;
-            max-width: 900px;
-        }
-
-        .section {
-            background: var(--panel-bg);
-            border-top: 4px solid #444;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-
-        .section.comp { border-color: var(--boss-green); }
-        .section.preamp { border-color: var(--boss-orange); }
-        .section.mod { border-color: var(--boss-blue); }
-
-        .knob-container {
-            display: flex;
-            justify-content: center;
+            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
             gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
+            justify-items: center;
         }
 
-        .knob {
-            width: 40px;
-            height: 40px;
-            background: radial-gradient(circle, #444 0%, #111 100%);
-            border: 2px solid #555;
-            border-radius: 50%;
-            position: relative;
-        }
+        .knob-group { text-align: center; }
+        .knob-label { display: block; font-size: 0.65rem; text-transform: uppercase; margin-top: 5px; color: #bbb; }
+        
+        input[type=range] { width: 70px; cursor: pointer; }
+        .value-display { font-family: monospace; color: white; font-size: 0.8rem; display: block; }
 
-        .knob::after {
-            content: '';
-            position: absolute;
-            top: 5px;
-            left: 50%;
-            width: 2px;
-            height: 10px;
-            background: var(--boss-blue);
-            transform: translateX(-50%);
-        }
-
-        .description-box {
-            margin-top: 20px;
-            padding: 15px;
-            background: #252525;
-            border-left: 4px solid var(--boss-blue);
-            width: 100%;
-            max-width: 800px;
-            border-radius: 0 8px 8px 0;
-        }
-
-        .footer { margin-top: 30px; font-size: 0.8rem; color: #666; }
+        .save-info { font-size: 0.7rem; color: #666; margin-top: 10px; text-align: center; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>ME-80 Patch Manager</h1>
-        <p>Projet de Pierrot - Quebec</p>
+        <h1>ME-80 Tone Studio</h1>
     </div>
 
-    <select id="patchSelect" class="patch-selector" onchange="updatePatch()">
-        <option value="">Chargement des patchs...</option>
-    </select>
-
-    <div id="displayArea" style="display:none; width: 100%; max-width: 900px;">
-        <div class="description-box">
-            <strong id="currentName">Nom du Patch</strong><br>
-            <span id="currentDesc" style="color: #bbb;">Description</span>
+    <div class="pedal-section preamp">
+        <span class="section-title" style="color: var(--boss-orange);">PREAMP</span>
+        <select id="ampType" onchange="save()">
+            <option value="metal">METAL</option><option value="stack">STACK</option>
+            <option value="drive">DRIVE</option><option value="lead">LEAD</option>
+            <option value="combo">COMBO</option><option value="crunch">CRUNCH</option>
+            <option value="tweed">TWEED</option><option value="clean">CLEAN</option>
+        </select>
+        <div class="knobs-grid">
+            <div class="knob-group">
+                <span class="value-display" id="v-gain">50</span>
+                <input type="range" id="gain" min="0" max="100" value="50" oninput="upd('gain')">
+                <span class="knob-label">Gain</span>
+            </div>
+            <div class="knob-group">
+                <span class="value-display" id="v-bass">50</span>
+                <input type="range" id="bass" min="0" max="100" value="50" oninput="upd('bass')">
+                <span class="knob-label">Bass</span>
+            </div>
+            <div class="knob-group">
+                <span class="value-display" id="v-mid">50</span>
+                <input type="range" id="mid" min="0" max="100" value="50" oninput="upd('mid')">
+                <span class="knob-label">Middle</span>
+            </div>
+            <div class="knob-group">
+                <span class="value-display" id="v-treble">50</span>
+                <input type="range" id="treble" min="0" max="100" value="50" oninput="upd('treble')">
+                <span class="knob-label">Treble</span>
+            </div>
+            <div class="knob-group">
+                <span class="value-display" id="v-level">50</span>
+                <input type="range" id="level" min="0" max="100" value="50" oninput="upd('level')">
+                <span class="knob-label">Level</span>
+            </div>
         </div>
+    </div>
 
-        <div class="pedalier">
-            <div class="section comp">
-                <span>COMP / FX</span>
-                <div class="knob-container">
-                    <div><div class="knob"></div><small>Sustain</small></div>
-                </div>
+    <div class="pedal-section eqfx2">
+        <span class="section-title" style="color: var(--boss-blue);">EQ / FX2</span>
+        <select id="fx2Type" onchange="save()">
+            <option value="phaser">PHASER</option><option value="tremolo">TREMOLO</option>
+            <option value="boost">BOOST</option><option value="delay">DELAY</option>
+            <option value="eq">EQ</option>
+        </select>
+        <div class="knobs-grid">
+            <div class="knob-group">
+                <span class="value-display" id="v-f2-bass">50</span>
+                <input type="range" id="f2-bass" min="0" max="100" value="50" oninput="upd('f2-bass')">
+                <span class="knob-label">Bass</span>
             </div>
-            <div class="section preamp">
-                <span>PREAMP</span>
-                <div class="knob-container">
-                    <div><div class="knob" style="transform: rotate(45deg);"></div><small>Gain</small></div>
-                    <div><div class="knob" style="transform: rotate(-30deg);"></div><small>Bass</small></div>
-                </div>
+            <div class="knob-group">
+                <span class="value-display" id="v-f2-mid">50</span>
+                <input type="range" id="f2-mid" min="0" max="100" value="50" oninput="upd('f2-mid')">
+                <span class="knob-label">Middle</span>
             </div>
-            <div class="section mod">
-                <span>MODULATION</span>
-                <div class="knob-container">
-                    <div><div class="knob" style="transform: rotate(90deg);"></div><small>Rate</small></div>
-                </div>
+            <div class="knob-group">
+                <span class="value-display" id="v-f2-treble">50</span>
+                <input type="range" id="f2-treble" min="0" max="100" value="50" oninput="upd('f2-treble')">
+                <span class="knob-label">Treble</span>
+            </div>
+            <div class="knob-group">
+                <span class="value-display" id="v-f2-level">50</span>
+                <input type="range" id="f2-level" min="0" max="100" value="50" oninput="upd('f2-level')">
+                <span class="knob-label">Level</span>
             </div>
         </div>
     </div>
 
-    <div class="footer">
-        Basé sur votre fichier : ME-80 Patch.xlsx
+    <div class="pedal-section reverb">
+        <span class="section-title" style="color: var(--boss-red);">REVERB</span>
+        <select id="revType" onchange="save()">
+            <option value="hall">HALL</option>
+            <option value="room">ROOM</option>
+            <option value="spring">SPRING</option>
+        </select>
+        <div class="knobs-grid">
+            <div class="knob-group">
+                <span class="value-display" id="v-rev-val">0</span>
+                <input type="range" id="rev-val" min="0" max="100" value="0" oninput="upd('rev-val')">
+                <span class="knob-label">Niveau</span>
+            </div>
+        </div>
     </div>
+
+    <div id="status" class="save-info">En attente de changements...</div>
 
     <script>
-        // Vos données extraites du fichier CSV
-        const patchData = [
-            { patch: "U1-1", name: "Clean Chorus", desc: "Clean with Chorus" },
-            { patch: "U1-2", name: "Crunch", desc: "Light Overdrive" },
-            { patch: "U1-3", name: "Lead Solo", desc: "High Gain with Delay" },
-            { patch: "U1-4", name: "Bluesy", desc: "Warm Blues Tone" },
-            { patch: "U2-1", name: "Ambient Swell", desc: "Slow Gear + Reverb" },
-            { patch: "U2-2", name: "Rock Rhythm", desc: "Classic Marshall Style" },
-            { patch: "U2-3", name: "Metal Edge", desc: "Heavy Distortion" },
-            { patch: "U2-4", name: "Acoustic Sim", desc: "Electric to Acoustic" }
-            // Ajoutez les autres lignes ici...
-        ];
+        const ids = ['gain','bass','mid','treble','level','f2-bass','f2-mid','f2-treble','f2-level','rev-val'];
 
-        function init() {
-            const select = document.getElementById('patchSelect');
-            select.innerHTML = '<option value="">Sélectionnez un patch...</option>';
-            
-            patchData.forEach((p, index) => {
-                const opt = document.createElement('option');
-                opt.value = index;
-                opt.innerHTML = `${p.patch} - ${p.name}`;
-                select.appendChild(opt);
-            });
+        function upd(id) {
+            document.getElementById('v-' + id).innerText = document.getElementById(id).value;
+            save();
         }
 
-        function updatePatch() {
-            const index = document.getElementById('patchSelect').value;
-            const display = document.getElementById('displayArea');
-            
-            if (index !== "") {
-                const data = patchData[index];
-                document.getElementById('currentName').innerText = data.patch + " : " + data.name;
-                document.getElementById('currentDesc').innerText = data.desc;
-                display.style.display = 'block';
-            } else {
-                display.style.display = 'none';
+        function save() {
+            const data = {
+                amp: document.getElementById('ampType').value,
+                fx2: document.getElementById('fx2Type').value,
+                rev: document.getElementById('revType').value,
+                vals: {}
+            };
+            ids.forEach(id => data.vals[id] = document.getElementById(id).value);
+            localStorage.setItem('me80_v2_data', JSON.stringify(data));
+            document.getElementById('status').innerText = "Sauvegardé : " + new Date().toLocaleTimeString();
+        }
+
+        window.onload = () => {
+            const saved = localStorage.getItem('me80_v2_data');
+            if (saved) {
+                const d = JSON.parse(saved);
+                document.getElementById('ampType').value = d.amp;
+                document.getElementById('fx2Type').value = d.fx2;
+                document.getElementById('revType').value = d.rev;
+                ids.forEach(id => {
+                    document.getElementById(id).value = d.vals[id];
+                    document.getElementById('v-' + id).innerText = d.vals[id];
+                });
             }
-        }
-
-        window.onload = init;
+        };
     </script>
 </body>
 </html>
