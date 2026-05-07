@@ -8,7 +8,7 @@
         :root {
             --bg: #121212; --panel: #1e1e1e; --text: #e0e0e0;
             --boss-orange: #ffaa00; --boss-blue: #00aaff; --boss-red: #ff4444;
-            --boss-yellow: #ffff00; --boss-green: #00ff88; --boss-purple: #cc00ff;
+            --boss-yellow: #ffff00; --boss-green: #00ff88; --boss-grey: #777777;
         }
         body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
         .sticky-header { position: sticky; top: 0; z-index: 1000; width: 100%; background-color: var(--bg); padding: 10px 0; border-bottom: 2px solid #333; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.8); }
@@ -24,7 +24,7 @@
         .knob-label { display: block; font-size: 0.6rem; text-transform: uppercase; margin-top: 5px; color: #bbb; }
         input[type=range] { width: 75px; cursor: pointer; }
         .value-display { font-family: monospace; color: white; font-size: 0.8rem; display: block; font-weight: bold; }
-        .ms-input { width: 80px !important; text-align: center; border-color: var(--boss-purple) !important; margin-top: 5px; }
+        .ms-input { width: 80px !important; text-align: center; border-color: var(--boss-grey) !important; margin-top: 5px; }
         .save-info { font-size: 0.7rem; color: #666; padding-bottom: 20px; }
     </style>
 </head>
@@ -106,8 +106,8 @@
             </div>
         </div>
 
-        <div class="pedal-section" style="border-color: var(--boss-purple);">
-            <span class="section-title" style="color: var(--boss-purple);">DELAY</span>
+        <div class="pedal-section" style="border-color: var(--boss-grey);">
+            <span class="section-title" style="color: var(--boss-grey);">DELAY</span>
             <select id="dlyType" onchange="save()">
                 <option value="modulate">MODULATE</option><option value="tape">TAPE</option><option value="analog">ANALOG</option><option value="500-6000ms">500-6000ms</option><option value="100-600ms">100-600ms</option><option value="1-99ms">1-99ms</option><option value="reverse">REVERSE</option><option value="cho+delay">CHO+DELAY</option><option value="tempo">TEMPO</option><option value="tera echo">TERA ECHO</option><option value="phrase loop">PHRASE LOOP</option>
             </select>
@@ -148,7 +148,7 @@
 
     <script>
         const ids = ['c-sus','c-att','c-lvl','od-drv','od-tne','od-lvl','gain','bass','mid','treble','level','m-rate','m-dep','m-lvl','f2-bass','f2-mid','f2-treble','f2-level','d-time','d-fdb','d-lvl','rev-val','out-lvl'];
-        let myLibrary = JSON.parse(localStorage.getItem('me80_lib_v3')) || {};
+        let myLibrary = JSON.parse(localStorage.getItem('me80_lib_v4')) || {};
 
         function upd(id) { document.getElementById('v-' + id).innerText = document.getElementById(id).value; }
 
@@ -178,7 +178,7 @@
             };
             ids.forEach(id => data.vals[id] = document.getElementById(id).value);
             myLibrary[name] = data;
-            localStorage.setItem('me80_lib_v3', JSON.stringify(myLibrary));
+            localStorage.setItem('me80_lib_v4', JSON.stringify(myLibrary));
             updateMenu();
             document.getElementById('status').innerText = "Sauvegardé : " + name;
         }
