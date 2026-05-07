@@ -11,6 +11,7 @@
             --boss-orange: #ffaa00;
             --boss-blue: #00aaff;
             --boss-red: #ff4444;
+            --boss-yellow: #ffff00;
             --text: #e0e0e0;
         }
 
@@ -25,7 +26,7 @@
             align-items: center;
         }
 
-        .header { text-align: center; margin-bottom: 15px; }
+        .header { text-align: center; margin-bottom: 10px; }
         h1 { color: var(--boss-blue); font-size: 1.2rem; text-transform: uppercase; margin: 0; }
 
         .pedal-section {
@@ -41,33 +42,44 @@
 
         .section-title {
             font-weight: bold;
-            font-size: 1rem;
-            margin-bottom: 15px;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
             display: block;
             text-align: center;
             border-bottom: 1px solid #333;
             padding-bottom: 5px;
+            text-transform: uppercase;
         }
 
-        /* Couleurs spécifiques Boss */
+        /* Couleurs */
+        .info-patch { border-color: var(--boss-yellow); }
         .preamp { border-color: var(--boss-orange); }
         .eqfx2 { border-color: var(--boss-blue); }
         .reverb { border-color: var(--boss-red); }
 
-        select {
+        input[type="text"], select {
             width: 100%;
             padding: 10px;
             background: #252525;
             color: white;
             border: 1px solid #444;
             border-radius: 5px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+            color: #aaa;
+            text-transform: uppercase;
         }
 
         .knobs-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
             gap: 10px;
             justify-items: center;
         }
@@ -75,8 +87,8 @@
         .knob-group { text-align: center; }
         .knob-label { display: block; font-size: 0.65rem; text-transform: uppercase; margin-top: 5px; color: #bbb; }
         
-        input[type=range] { width: 70px; cursor: pointer; }
-        .value-display { font-family: monospace; color: white; font-size: 0.8rem; display: block; }
+        input[type=range] { width: 75px; cursor: pointer; }
+        .value-display { font-family: monospace; color: white; font-size: 0.85rem; display: block; font-weight: bold; }
 
         .save-info { font-size: 0.7rem; color: #666; margin-top: 10px; text-align: center; }
     </style>
@@ -85,6 +97,16 @@
 
     <div class="header">
         <h1>ME-80 Tone Studio</h1>
+    </div>
+
+    <div class="pedal-section info-patch">
+        <span class="section-title" style="color: var(--boss-yellow);">Identification du Patch</span>
+        
+        <label class="input-label">Nom du Son :</label>
+        <input type="text" id="patchName" placeholder="Ex: Clean Chorus Pierrot" oninput="save()">
+        
+        <label class="input-label">Position sur le Pédalier :</label>
+        <input type="text" id="patchPos" placeholder="Ex: U1-1" oninput="save()">
     </div>
 
     <div class="pedal-section preamp">
@@ -162,16 +184,16 @@
             <option value="room">ROOM</option>
             <option value="spring">SPRING</option>
         </select>
-        <div class="knobs-grid">
+        <div class="knobs-grid" style="grid-template-columns: 1fr;">
             <div class="knob-group">
                 <span class="value-display" id="v-rev-val">0</span>
-                <input type="range" id="rev-val" min="0" max="100" value="0" oninput="upd('rev-val')">
-                <span class="knob-label">Niveau</span>
+                <input type="range" id="rev-val" min="0" max="100" value="0" oninput="upd('rev-val')" style="width: 150px;">
+                <span class="knob-label">Niveau Reverb</span>
             </div>
         </div>
     </div>
 
-    <div id="status" class="save-info">En attente de changements...</div>
+    <div id="status" class="save-info">Prêt à construire.</div>
 
     <script>
         const ids = ['gain','bass','mid','treble','level','f2-bass','f2-mid','f2-treble','f2-level','rev-val'];
@@ -183,26 +205,32 @@
 
         function save() {
             const data = {
+                name: document.getElementById('patchName').value,
+                pos: document.getElementById('patchPos').value,
                 amp: document.getElementById('ampType').value,
                 fx2: document.getElementById('fx2Type').value,
                 rev: document.getElementById('revType').value,
                 vals: {}
             };
             ids.forEach(id => data.vals[id] = document.getElementById(id).value);
-            localStorage.setItem('me80_v2_data', JSON.stringify(data));
-            document.getElementById('status').innerText = "Sauvegardé : " + new Date().toLocaleTimeString();
+            localStorage.setItem('me80_v3_data', JSON.stringify(data));
+            document.getElementById('status').innerText = "Sauvegarde auto : " + new Date().toLocaleTimeString();
         }
 
         window.onload = () => {
-            const saved = localStorage.getItem('me80_v2_data');
+            const saved = localStorage.getItem('me80_v3_data');
             if (saved) {
                 const d = JSON.parse(saved);
+                document.getElementById('patchName').value = d.name || "";
+                document.getElementById('patchPos').value = d.pos || "";
                 document.getElementById('ampType').value = d.amp;
                 document.getElementById('fx2Type').value = d.fx2;
                 document.getElementById('revType').value = d.rev;
                 ids.forEach(id => {
-                    document.getElementById(id).value = d.vals[id];
-                    document.getElementById('v-' + id).innerText = d.vals[id];
+                    if(d.vals[id]) {
+                        document.getElementById(id).value = d.vals[id];
+                        document.getElementById('v-' + id).innerText = d.vals[id];
+                    }
                 });
             }
         };
