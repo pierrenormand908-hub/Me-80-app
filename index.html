@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ME-80 Tone Master</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --panel-bg: #1e1e1e;
+            --boss-blue: #00aaff;
+            --boss-green: #00ff88;
+            --boss-orange: #ffaa00;
+            --text-color: #e0e0e0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 { color: var(--boss-blue); margin: 0; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
+
+        .patch-selector {
+            width: 100%;
+            max-width: 400px;
+            background: var(--panel-bg);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            margin: 20px 0;
+            font-size: 1rem;
+        }
+
+        .pedalier {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .section {
+            background: var(--panel-bg);
+            border-top: 4px solid #444;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .section.comp { border-color: var(--boss-green); }
+        .section.preamp { border-color: var(--boss-orange); }
+        .section.mod { border-color: var(--boss-blue); }
+
+        .knob-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .knob {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #444 0%, #111 100%);
+            border: 2px solid #555;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .knob::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            width: 2px;
+            height: 10px;
+            background: var(--boss-blue);
+            transform: translateX(-50%);
+        }
+
+        .description-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #252525;
+            border-left: 4px solid var(--boss-blue);
+            width: 100%;
+            max-width: 800px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .footer { margin-top: 30px; font-size: 0.8rem; color: #666; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>ME-80 Patch Manager</h1>
+        <p>Projet de Pierrot - Quebec</p>
+    </div>
+
+    <select id="patchSelect" class="patch-selector" onchange="updatePatch()">
+        <option value="">Chargement des patchs...</option>
+    </select>
+
+    <div id="displayArea" style="display:none; width: 100%; max-width: 900px;">
+        <div class="description-box">
+            <strong id="currentName">Nom du Patch</strong><br>
+            <span id="currentDesc" style="color: #bbb;">Description</span>
+        </div>
+
+        <div class="pedalier">
+            <div class="section comp">
+                <span>COMP / FX</span>
+                <div class="knob-container">
+                    <div><div class="knob"></div><small>Sustain</small></div>
+                </div>
+            </div>
+            <div class="section preamp">
+                <span>PREAMP</span>
+                <div class="knob-container">
+                    <div><div class="knob" style="transform: rotate(45deg);"></div><small>Gain</small></div>
+                    <div><div class="knob" style="transform: rotate(-30deg);"></div><small>Bass</small></div>
+                </div>
+            </div>
+            <div class="section mod">
+                <span>MODULATION</span>
+                <div class="knob-container">
+                    <div><div class="knob" style="transform: rotate(90deg);"></div><small>Rate</small></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Basé sur votre fichier : ME-80 Patch.xlsx
+    </div>
+
+    <script>
+        // Vos données extraites du fichier CSV
+        const patchData = [
+            { patch: "U1-1", name: "Clean Chorus", desc: "Clean with Chorus" },
+            { patch: "U1-2", name: "Crunch", desc: "Light Overdrive" },
+            { patch: "U1-3", name: "Lead Solo", desc: "High Gain with Delay" },
+            { patch: "U1-4", name: "Bluesy", desc: "Warm Blues Tone" },
+            { patch: "U2-1", name: "Ambient Swell", desc: "Slow Gear + Reverb" },
+            { patch: "U2-2", name: "Rock Rhythm", desc: "Classic Marshall Style" },
+            { patch: "U2-3", name: "Metal Edge", desc: "Heavy Distortion" },
+            { patch: "U2-4", name: "Acoustic Sim", desc: "Electric to Acoustic" }
+            // Ajoutez les autres lignes ici...
+        ];
+
+        function init() {
+            const select = document.getElementById('patchSelect');
+            select.innerHTML = '<option value="">Sélectionnez un patch...</option>';
+            
+            patchData.forEach((p, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                opt.innerHTML = `${p.patch} - ${p.name}`;
+                select.appendChild(opt);
+            });
+        }
+
+        function updatePatch() {
+            const index = document.getElementById('patchSelect').value;
+            const display = document.getElementById('displayArea');
+            
+            if (index !== "") {
+                const data = patchData[index];
+                document.getElementById('currentName').innerText = data.patch + " : " + data.name;
+                document.getElementById('currentDesc').innerText = data.desc;
+                display.style.display = 'block';
+            } else {
+                display.style.display = 'none';
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
