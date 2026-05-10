@@ -19,7 +19,6 @@
         .info-patch { border: 2px solid var(--boss-yellow); background: var(--panel); border-radius: 8px; width: 90%; max-width: 450px; padding: 10px; box-sizing: border-box; }
         .scroll-content { width: 100%; display: flex; flex-direction: column; align-items: center; padding: 20px 15px; box-sizing: border-box; }
         
-        /* Style des Sections */
         .pedal-section { 
             background: var(--panel); border-radius: 12px; width: 100%; max-width: 450px; 
             padding: 15px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
@@ -29,7 +28,7 @@
         
         .section-title { font-weight: bold; font-size: 0.9rem; margin-bottom: 12px; display: block; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; text-transform: uppercase; color: #555; }
 
-        /* États ON (Actif) */
+        /* États ON */
         .is-on { border-top-width: 8px; }
         .is-on.preamp { border-color: var(--boss-orange); }
         .is-on.preamp .section-title { color: var(--boss-orange); }
@@ -39,6 +38,8 @@
         .is-on.odds .section-title { color: var(--boss-red); }
         .is-on.mod { border-color: var(--boss-blue); }
         .is-on.mod .section-title { color: var(--boss-blue); }
+        .is-on.eqfx2 { border-color: var(--boss-blue); }
+        .is-on.eqfx2 .section-title { color: var(--boss-blue); }
         .is-on.delay { border-color: var(--boss-yellow); }
         .is-on.delay .section-title { color: var(--boss-yellow); }
         .is-on.reverb { border-color: var(--boss-red); }
@@ -46,7 +47,6 @@
         .is-on.pfx { border-color: var(--boss-orange); }
         .is-on.pfx .section-title { color: var(--boss-orange); }
 
-        /* Quand c'est OFF */
         .pedal-section:not(.is-on) { opacity: 0.6; }
 
         .selector-container { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
@@ -143,6 +143,22 @@
             </div>
         </div>
 
+        <div class="pedal-section eqfx2 is-on" onclick="toggleEffet(this)">
+            <span class="section-title">EQ / FX2</span>
+            <div class="selector-container" onclick="event.stopPropagation()">
+                <select id="fx2Type">
+                    <option value="pha">PHASER</option><option value="tre">TREMOLO</option><option value="bst">BOOST</option><option value="dly">DELAY</option><option value="cho">CHORUS</option><option value="eq">EQ</option>
+                </select>
+                <input type="number" id="fx2Type-n" class="type-num-input" placeholder="#">
+            </div>
+            <div class="knobs-grid" onclick="event.stopPropagation()">
+                <div class="knob-group"><input type="range" id="f2-bass" min="0" max="100" oninput="sync('f2-bass')"><input type="number" id="f2-bass-n" class="value-input" oninput="sync('f2-bass',true)"><span class="knob-label">Bass</span></div>
+                <div class="knob-group"><input type="range" id="f2-mid" min="0" max="100" oninput="sync('f2-mid')"><input type="number" id="f2-mid-n" class="value-input" oninput="sync('f2-mid',true)"><span class="knob-label">Middle</span></div>
+                <div class="knob-group"><input type="range" id="f2-treble" min="0" max="100" oninput="sync('f2-treble')"><input type="number" id="f2-treble-n" class="value-input" oninput="sync('f2-treble',true)"><span class="knob-label">Treble</span></div>
+                <div class="knob-group"><input type="range" id="f2-level" min="0" max="100" oninput="sync('f2-level')"><input type="number" id="f2-level-n" class="value-input" oninput="sync('f2-level',true)"><span class="knob-label">Level</span></div>
+            </div>
+        </div>
+
         <div class="pedal-section delay is-on" onclick="toggleEffet(this)">
             <span class="section-title">DELAY</span>
             <div class="selector-container" onclick="event.stopPropagation()">
@@ -198,13 +214,11 @@
 
     <script>
         const knobIds = ['c-sus','c-att','c-lvl','od-drv','od-tne','od-lvl','gain','bass','mid','treble','level','m-rate','m-dep','m-lvl','f2-bass','f2-mid','f2-treble','f2-level','d-fdb','d-lvl','rev-val','out-lvl'];
-        const typeIds = ['compType', 'oddsType', 'ampType', 'modType', 'dlyType', 'revType', 'pfxType'];
+        const typeIds = ['compType', 'oddsType', 'ampType', 'modType', 'fx2Type', 'dlyType', 'revType', 'pfxType'];
         
-        let myLibrary = JSON.parse(localStorage.getItem('me80_lib_v7')) || {};
+        let myLibrary = JSON.parse(localStorage.getItem('me80_lib_v8')) || {};
 
-        function toggleEffet(el) {
-            el.classList.toggle('is-on');
-        }
+        function toggleEffet(el) { el.classList.toggle('is-on'); }
 
         function sync(id, fromInput = false) {
             const range = document.getElementById(id);
@@ -227,7 +241,6 @@
                 dTime: document.getElementById('d-time-t').value,
                 vals: {}, types: {}, states: {}
             };
-            
             knobIds.forEach(id => data.vals[id] = document.getElementById(id).value);
             typeIds.forEach(tId => {
                 data.types[tId] = {
@@ -235,20 +248,12 @@
                     num: document.getElementById(tId + '-n').value
                 };
             });
-
-            // Sauvegarder l'état ON/OFF
             document.querySelectorAll('.pedal-section').forEach(sec => {
-                if(sec.classList.contains('preamp')) data.states.preamp = sec.classList.contains('is-on');
-                if(sec.classList.contains('comp')) data.states.comp = sec.classList.contains('is-on');
-                if(sec.classList.contains('odds')) data.states.odds = sec.classList.contains('is-on');
-                if(sec.classList.contains('mod')) data.states.mod = sec.classList.contains('is-on');
-                if(sec.classList.contains('delay')) data.states.delay = sec.classList.contains('is-on');
-                if(sec.classList.contains('reverb')) data.states.reverb = sec.classList.contains('is-on');
-                if(sec.classList.contains('pfx')) data.states.pfx = sec.classList.contains('is-on');
+                const types = ['preamp','comp','odds','mod','eqfx2','delay','reverb','pfx'];
+                types.forEach(t => { if(sec.classList.contains(t)) data.states[t] = sec.classList.contains('is-on'); });
             });
-
             myLibrary[name] = data;
-            localStorage.setItem('me80_lib_v7', JSON.stringify(myLibrary));
+            localStorage.setItem('me80_lib_v8', JSON.stringify(myLibrary));
             updateMenu();
             document.getElementById('status').innerText = "Patch '" + name + "' enregistré !";
         }
@@ -268,56 +273,39 @@
             const d = myLibrary[n];
             document.getElementById('patchName').value = d.name;
             document.getElementById('patchPos').value = d.pos || "";
-            
             typeIds.forEach(tId => {
                 if(d.types && d.types[tId]) {
                     document.getElementById(tId).value = d.types[tId].val;
                     document.getElementById(tId + '-n').value = d.types[tId].num || "";
                 }
             });
-
             document.getElementById('d-time-t').value = d.dTime || "";
             document.getElementById('d-time').value = !isNaN(d.dTime) ? d.dTime : 50;
-
             knobIds.forEach(id => {
-                if (d.vals[id]) { 
-                    document.getElementById(id).value = d.vals[id]; 
-                    document.getElementById(id + '-n').value = d.vals[id];
-                }
+                if (d.vals[id]) { document.getElementById(id).value = d.vals[id]; document.getElementById(id + '-n').value = d.vals[id]; }
             });
-
-            // Charger les états ON/OFF
-            if(d.states) {
-                applyState('.preamp', d.states.preamp);
-                applyState('.comp', d.states.comp);
-                applyState('.odds', d.states.odds);
-                applyState('.mod', d.states.mod);
-                applyState('.delay', d.states.delay);
-                applyState('.reverb', d.states.reverb);
-                applyState('.pfx', d.states.pfx);
-            }
+            if(d.states) { Object.keys(d.states).forEach(k => { applyState('.' + k, d.states[k]); }); }
         }
 
         function applyState(selector, isOn) {
             const el = document.querySelector(selector);
-            if(isOn) el.classList.add('is-on');
-            else el.classList.remove('is-on');
+            if(el) { if(isOn) el.classList.add('is-on'); else el.classList.remove('is-on'); }
         }
 
         function exportLib() {
             document.getElementById('io-box').value = JSON.stringify(myLibrary);
             document.getElementById('io-box').select();
             document.execCommand('copy');
-            alert("Copié ! Garde ce texte dans tes Notes.");
+            alert("Bibliothèque copiée !");
         }
 
         function importLib() {
             try {
                 myLibrary = JSON.parse(document.getElementById('io-box').value);
-                localStorage.setItem('me80_lib_v7', JSON.stringify(myLibrary));
+                localStorage.setItem('me80_lib_v8', JSON.stringify(myLibrary));
                 updateMenu();
                 alert("Importation réussie !");
-            } catch(e) { alert("Erreur de texte."); }
+            } catch(e) { alert("Erreur."); }
         }
 
         window.onload = updateMenu;
