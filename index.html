@@ -11,15 +11,44 @@
             --bg: #121212; --panel: #1e1e1e; --text: #e0e0e0;
             --boss-orange: #ffaa00; --boss-blue: #00aaff; --boss-red: #ff4444;
             --boss-yellow: #ffff00; --boss-green: #00ff88; --boss-grey: #777777;
+            --off: #333333;
         }
         body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
         .sticky-header { position: sticky; top: 0; z-index: 1000; width: 100%; background-color: var(--bg); padding: 10px 0; border-bottom: 2px solid #333; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.8); }
         .header h1 { color: var(--boss-blue); font-size: 1.1rem; text-transform: uppercase; margin: 0 0 10px 0; }
         .info-patch { border: 2px solid var(--boss-yellow); background: var(--panel); border-radius: 8px; width: 90%; max-width: 450px; padding: 10px; box-sizing: border-box; }
         .scroll-content { width: 100%; display: flex; flex-direction: column; align-items: center; padding: 20px 15px; box-sizing: border-box; }
-        .pedal-section { background: var(--panel); border-radius: 12px; width: 100%; max-width: 450px; padding: 15px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border-top: 4px solid #444; box-sizing: border-box; }
-        .section-title { font-weight: bold; font-size: 0.9rem; margin-bottom: 12px; display: block; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; text-transform: uppercase; }
         
+        /* Style des Sections */
+        .pedal-section { 
+            background: var(--panel); border-radius: 12px; width: 100%; max-width: 450px; 
+            padding: 15px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
+            border-top: 6px solid var(--off); box-sizing: border-box; transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .section-title { font-weight: bold; font-size: 0.9rem; margin-bottom: 12px; display: block; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; text-transform: uppercase; color: #555; }
+
+        /* États ON (Actif) */
+        .is-on { border-top-width: 8px; }
+        .is-on.preamp { border-color: var(--boss-orange); }
+        .is-on.preamp .section-title { color: var(--boss-orange); }
+        .is-on.comp { border-color: var(--boss-green); }
+        .is-on.comp .section-title { color: var(--boss-green); }
+        .is-on.odds { border-color: var(--boss-red); }
+        .is-on.odds .section-title { color: var(--boss-red); }
+        .is-on.mod { border-color: var(--boss-blue); }
+        .is-on.mod .section-title { color: var(--boss-blue); }
+        .is-on.delay { border-color: var(--boss-yellow); }
+        .is-on.delay .section-title { color: var(--boss-yellow); }
+        .is-on.reverb { border-color: var(--boss-red); }
+        .is-on.reverb .section-title { color: var(--boss-red); }
+        .is-on.pfx { border-color: var(--boss-orange); }
+        .is-on.pfx .section-title { color: var(--boss-orange); }
+
+        /* Quand c'est OFF */
+        .pedal-section:not(.is-on) { opacity: 0.6; }
+
         .selector-container { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
         .selector-container select { flex: 1; margin-bottom: 0 !important; }
         .type-num-input { width: 60px !important; text-align: center; border-color: #555 !important; color: var(--boss-yellow) !important; font-weight: bold; margin-bottom: 0 !important; }
@@ -33,7 +62,7 @@
         .knob-label { display: block; font-size: 0.6rem; text-transform: uppercase; margin-top: 5px; color: #bbb; }
         input[type=range] { width: 75px; cursor: pointer; margin-bottom: 5px; }
         .value-input { width: 55px !important; text-align: center; height: 28px; padding: 2px !important; font-size: 0.8rem !important; border-color: #555 !important; color: var(--boss-yellow) !important; margin-bottom: 0 !important; }
-        .ms-input { width: 120px !important; text-align: center; border-color: var(--boss-grey) !important; font-weight: bold; color: var(--boss-yellow) !important; }
+        .ms-input { width: 110px !important; text-align: center; border-color: #555 !important; font-weight: bold; color: var(--boss-yellow) !important; }
         .save-info { font-size: 0.7rem; color: #666; padding-bottom: 20px; text-align: center; }
     </style>
 </head>
@@ -52,45 +81,45 @@
     </div>
 
     <div class="scroll-content">
-        <div class="pedal-section" style="border-color: var(--boss-green);">
-            <span class="section-title" style="color: var(--boss-green);">COMP / FX1</span>
-            <div class="selector-container">
+        <div class="pedal-section comp is-on" onclick="toggleEffet(this)">
+            <span class="section-title">COMP / FX1</span>
+            <div class="selector-container" onclick="event.stopPropagation()">
                 <select id="compType">
-                    <option value="defretter">DEFRETTER</option><option value="slow gear">SLOW GEAR</option><option value="octave">OCTAVE</option><option value="t.wah down">T.WAH DOWN</option><option value="t.wah up">T.WAH UP</option><option value="comp">COMP</option><option value="ring mod">RING MOD</option><option value="ac sim">AC SIM</option><option value="single hum">SINGLE HUM</option><option value="hum single">HUM SINGLE</option><option value="solo">SOLO</option>
+                    <option value="def">DEFRETTER</option><option value="slow">SLOW GEAR</option><option value="oct">OCTAVE</option><option value="twd">T.WAH DOWN</option><option value="twu">T.WAH UP</option><option value="comp">COMP</option><option value="ring">RING MOD</option><option value="ac">AC SIM</option><option value="sh">SINGLE HUM</option><option value="hs">HUM SINGLE</option><option value="solo">SOLO</option>
                 </select>
                 <input type="number" id="compType-n" class="type-num-input" placeholder="#">
             </div>
-            <div class="knobs-grid">
+            <div class="knobs-grid" onclick="event.stopPropagation()">
                 <div class="knob-group"><input type="range" id="c-sus" min="0" max="100" oninput="sync('c-sus')"><input type="number" id="c-sus-n" class="value-input" oninput="sync('c-sus',true)"><span class="knob-label">Sustain</span></div>
                 <div class="knob-group"><input type="range" id="c-att" min="0" max="100" oninput="sync('c-att')"><input type="number" id="c-att-n" class="value-input" oninput="sync('c-att',true)"><span class="knob-label">Attack</span></div>
                 <div class="knob-group"><input type="range" id="c-lvl" min="0" max="100" oninput="sync('c-lvl')"><input type="number" id="c-lvl-n" class="value-input" oninput="sync('c-lvl',true)"><span class="knob-label">Level</span></div>
             </div>
         </div>
 
-        <div class="pedal-section" style="border-color: var(--boss-red);">
-            <span class="section-title" style="color: var(--boss-red);">OD / DS</span>
-            <div class="selector-container">
+        <div class="pedal-section odds is-on" onclick="toggleEffet(this)">
+            <span class="section-title">OD / DS</span>
+            <div class="selector-container" onclick="event.stopPropagation()">
                 <select id="oddsType">
-                    <option value="distortion">DISTORTION</option><option value="turbo od">TURBO OD</option><option value="blues">BLUES</option><option value="t-scream">T-SCREAM</option><option value="overdrive">OVERDRIVE</option><option value="boost">BOOST</option><option value="turbo ds">TURBO DS</option><option value="metal ds">METAL DS</option><option value="core">CORE</option><option value="fuzz">FUZZ</option><option value="oct fuzz">OCT FUZZ</option>
+                    <option value="dist">DISTORTION</option><option value="tod">TURBO OD</option><option value="blues">BLUES</option><option value="ts">T-SCREAM</option><option value="ov">OVERDRIVE</option><option value="bst">BOOST</option><option value="tds">TURBO DS</option><option value="mds">METAL DS</option><option value="core">CORE</option><option value="fuzz">FUZZ</option><option value="ofuzz">OCT FUZZ</option>
                 </select>
                 <input type="number" id="oddsType-n" class="type-num-input" placeholder="#">
             </div>
-            <div class="knobs-grid">
+            <div class="knobs-grid" onclick="event.stopPropagation()">
                 <div class="knob-group"><input type="range" id="od-drv" min="0" max="100" oninput="sync('od-drv')"><input type="number" id="od-drv-n" class="value-input" oninput="sync('od-drv',true)"><span class="knob-label">Drive</span></div>
                 <div class="knob-group"><input type="range" id="od-tne" min="0" max="100" oninput="sync('od-tne')"><input type="number" id="od-tne-n" class="value-input" oninput="sync('od-tne',true)"><span class="knob-label">Tone</span></div>
                 <div class="knob-group"><input type="range" id="od-lvl" min="0" max="100" oninput="sync('od-lvl')"><input type="number" id="od-lvl-n" class="value-input" oninput="sync('od-lvl',true)"><span class="knob-label">Level</span></div>
             </div>
         </div>
 
-        <div class="pedal-section" style="border-color: var(--boss-orange);">
-            <span class="section-title" style="color: var(--boss-orange);">PREAMP</span>
-            <div class="selector-container">
+        <div class="pedal-section preamp is-on" onclick="toggleEffet(this)">
+            <span class="section-title">PREAMP</span>
+            <div class="selector-container" onclick="event.stopPropagation()">
                 <select id="ampType">
                     <option value="ac">AC</option><option value="metal">METAL</option><option value="stack">STACK</option><option value="drive">DRIVE</option><option value="lead">LEAD</option><option value="combo">COMBO</option><option value="crunch">CRUNCH</option><option value="tweed">TWEED</option><option value="clean">CLEAN</option>
                 </select>
                 <input type="number" id="ampType-n" class="type-num-input" placeholder="#">
             </div>
-            <div class="knobs-grid">
+            <div class="knobs-grid" onclick="event.stopPropagation()">
                 <div class="knob-group"><input type="range" id="gain" min="0" max="100" oninput="sync('gain')"><input type="number" id="gain-n" class="value-input" oninput="sync('gain',true)"><span class="knob-label">Gain</span></div>
                 <div class="knob-group"><input type="range" id="bass" min="0" max="100" oninput="sync('bass')"><input type="number" id="bass-n" class="value-input" oninput="sync('bass',true)"><span class="knob-label">Bass</span></div>
                 <div class="knob-group"><input type="range" id="mid" min="0" max="100" oninput="sync('mid')"><input type="number" id="mid-n" class="value-input" oninput="sync('mid',true)"><span class="knob-label">Middle</span></div>
@@ -99,49 +128,33 @@
             </div>
         </div>
 
-        <div class="pedal-section" style="border-color: var(--boss-blue);">
-            <span class="section-title" style="color: var(--boss-blue);">MODULATION</span>
-            <div class="selector-container">
+        <div class="pedal-section mod is-on" onclick="toggleEffet(this)">
+            <span class="section-title">MODULATION</span>
+            <div class="selector-container" onclick="event.stopPropagation()">
                 <select id="modType">
-                    <option value="pitch">PITCH SHIFT</option><option value="vibrato">VIBRATO</option><option value="chorus">CHORUS</option><option value="tremolo">TREMOLO</option><option value="flanger">FLANGER</option><option value="phaser">PHASER</option><option value="harmonist">HARMONIST</option><option value="rotary">ROTARY</option><option value="uni-v">UNI-V</option><option value="delay">DELAY</option><option value="overtone">OVERTONE</option>
+                    <option value="pit">PITCH SHIFT</option><option value="vib">VIBRATO</option><option value="cho">CHORUS</option><option value="tre">TREMOLO</option><option value="fla">FLANGER</option><option value="pha">PHASER</option><option value="har">HARMONIST</option><option value="rot">ROTARY</option><option value="uni">UNI-V</option><option value="dly">DELAY</option><option value="ove">OVERTONE</option>
                 </select>
                 <input type="number" id="modType-n" class="type-num-input" placeholder="#">
             </div>
-            <div class="knobs-grid">
+            <div class="knobs-grid" onclick="event.stopPropagation()">
                 <div class="knob-group"><input type="range" id="m-rate" min="0" max="100" oninput="sync('m-rate')"><input type="number" id="m-rate-n" class="value-input" oninput="sync('m-rate',true)"><span class="knob-label">Rate</span></div>
                 <div class="knob-group"><input type="range" id="m-dep" min="0" max="100" oninput="sync('m-dep')"><input type="number" id="m-dep-n" class="value-input" oninput="sync('m-dep',true)"><span class="knob-label">Depth</span></div>
                 <div class="knob-group"><input type="range" id="m-lvl" min="0" max="100" oninput="sync('m-lvl')"><input type="number" id="m-lvl-n" class="value-input" oninput="sync('m-lvl',true)"><span class="knob-label">Level</span></div>
             </div>
         </div>
 
-        <div class="pedal-section" style="border-color: var(--boss-blue);">
-            <span class="section-title" style="color: var(--boss-blue);">EQ / FX2</span>
-            <div class="selector-container">
-                <select id="fx2Type">
-                    <option value="phaser">PHASER</option><option value="tremolo">TREMOLO</option><option value="boost">BOOST</option><option value="delay">DELAY</option><option value="chorus">CHORUS</option><option value="eq">EQ</option>
-                </select>
-                <input type="number" id="fx2Type-n" class="type-num-input" placeholder="#">
-            </div>
-            <div class="knobs-grid">
-                <div class="knob-group"><input type="range" id="f2-bass" min="0" max="100" oninput="sync('f2-bass')"><input type="number" id="f2-bass-n" class="value-input" oninput="sync('f2-bass',true)"><span class="knob-label">Bass</span></div>
-                <div class="knob-group"><input type="range" id="f2-mid" min="0" max="100" oninput="sync('f2-mid')"><input type="number" id="f2-mid-n" class="value-input" oninput="sync('f2-mid',true)"><span class="knob-label">Middle</span></div>
-                <div class="knob-group"><input type="range" id="f2-treble" min="0" max="100" oninput="sync('f2-treble')"><input type="number" id="f2-treble-n" class="value-input" oninput="sync('f2-treble',true)"><span class="knob-label">Treble</span></div>
-                <div class="knob-group"><input type="range" id="f2-level" min="0" max="100" oninput="sync('f2-level')"><input type="number" id="f2-level-n" class="value-input" oninput="sync('f2-level',true)"><span class="knob-label">Level</span></div>
-            </div>
-        </div>
-
-        <div class="pedal-section" style="border-color: var(--boss-grey);">
-            <span class="section-title" style="color: var(--boss-grey);">DELAY</span>
-            <div class="selector-container">
+        <div class="pedal-section delay is-on" onclick="toggleEffet(this)">
+            <span class="section-title">DELAY</span>
+            <div class="selector-container" onclick="event.stopPropagation()">
                 <select id="dlyType">
-                    <option value="modulate">MODULATE</option><option value="tape">TAPE</option><option value="analog">ANALOG</option><option value="500-6000ms">500-6000ms</option><option value="100-600ms">100-600ms</option><option value="1-99ms">1-99ms</option><option value="reverse">REVERSE</option><option value="cho+delay">CHO+DELAY</option><option value="tempo">TEMPO</option><option value="tera">TERA ECHO</option><option value="loop">PHRASE LOOP</option>
+                    <option value="mod">MODULATE</option><option value="tap">TAPE</option><option value="ana">ANALOG</option><option value="6000">500-6000ms</option><option value="600">100-600ms</option><option value="99">1-99ms</option><option value="rev">REVERSE</option><option value="cho">CHO+DELAY</option><option value="tem">TEMPO</option><option value="ter">TERA ECHO</option><option value="loo">PHRASE LOOP</option>
                 </select>
                 <input type="number" id="dlyType-n" class="type-num-input" placeholder="#">
             </div>
-            <div class="knobs-grid">
+            <div class="knobs-grid" onclick="event.stopPropagation()">
                 <div class="knob-group">
                     <input type="range" id="d-time" min="1" max="6000" step="1" oninput="syncDelay(false)">
-                    <input type="text" id="d-time-t" class="ms-input" placeholder="ms ou texte" oninput="syncDelay(true)">
+                    <input type="text" id="d-time-t" class="ms-input" placeholder="ms / texte" oninput="syncDelay(true)">
                     <span class="knob-label">Time</span>
                 </div>
                 <div class="knob-group"><input type="range" id="d-fdb" min="0" max="100" oninput="sync('d-fdb')"><input type="number" id="d-fdb-n" class="value-input" oninput="sync('d-fdb',true)"><span class="knob-label">Feedback</span></div>
@@ -149,48 +162,49 @@
             </div>
         </div>
 
-        <div class="pedal-section" style="border-color: var(--boss-red);">
-            <span class="section-title" style="color: var(--boss-red);">REVERB & MASTER</span>
-            <div class="selector-container">
-                <select id="revType"><option value="hall">HALL</option><option value="room">ROOM</option><option value="spring">SPRING</option></select>
+        <div class="pedal-section reverb is-on" onclick="toggleEffet(this)">
+            <span class="section-title">REVERB & MASTER</span>
+            <div class="selector-container" onclick="event.stopPropagation()">
+                <select id="revType"><option value="hal">HALL</option><option value="roo">ROOM</option><option value="spr">SPRING</option></select>
                 <input type="number" id="revType-n" class="type-num-input" placeholder="#">
             </div>
-            <div class="knobs-grid">
+            <div class="knobs-grid" onclick="event.stopPropagation()">
                 <div class="knob-group"><input type="range" id="rev-val" min="0" max="100" oninput="sync('rev-val')"><input type="number" id="rev-val-n" class="value-input" oninput="sync('rev-val',true)"><span class="knob-label">Reverb</span></div>
                 <div class="knob-group"><input type="range" id="out-lvl" min="0" max="100" oninput="sync('out-lvl')"><input type="number" id="out-lvl-n" class="value-input" oninput="sync('out-lvl',true)"><span class="knob-label">Output L</span></div>
             </div>
         </div>
 
-        <div class="pedal-section" style="border-color: #777;">
+        <div class="pedal-section pfx is-on" onclick="toggleEffet(this)">
             <span class="section-title">PEDAL FX</span>
-            <div class="selector-container">
+            <div class="selector-container" onclick="event.stopPropagation()">
                 <select id="pfxType">
-                    <option value="freeze">FREEZE</option><option value="-1 oct">-1 OCT</option><option value="+2 oct">+2 OCT</option><option value="+1 oct">+1 OCT</option><option value="voice">VOICE</option><option value="wah">WAH</option><option value="osc delay">OSC DELAY</option><option value="od/ds">OD/DS</option><option value="mod rate">MOD RATE</option><option value="delay level">DELAY LEVEL</option>
+                    <option value="fre">FREEZE</option><option value="-1">-1 OCT</option><option value="+2">+2 OCT</option><option value="+1">+1 OCT</option><option value="voi">VOICE</option><option value="wah">WAH</option><option value="osc">OSC DELAY</option><option value="ods">OD/DS</option><option value="rat">MOD RATE</option><option value="lev">DELAY LEVEL</option>
                 </select>
                 <input type="number" id="pfxType-n" class="type-num-input" placeholder="#">
             </div>
         </div>
 
-        <div class="pedal-section" style="border-color: white; border-top: 2px dashed #666;">
-            <span class="section-title">Sauvegarde Externe (Sécurité)</span>
-            <textarea id="io-box" rows="3" placeholder="Texte de sauvegarde ici..."></textarea>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="exportLib()" class="btn-sec">1. EXPORTER MES SONS</button>
-                <button onclick="importLib()" class="btn-sec" style="background: var(--boss-green); color: black;">2. IMPORTER ICI</button>
+        <div class="pedal-section" style="border-top: 2px dashed #666; cursor: default;">
+            <span class="section-title" style="color: white;">Sauvegarde / Export</span>
+            <textarea id="io-box" rows="2" placeholder="Code de secours..."></textarea>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="exportLib()" class="btn-sec">EXPORTER</button>
+                <button onclick="importLib()" class="btn-sec" style="background: var(--boss-green); color: black;">IMPORTER</button>
             </div>
         </div>
 
-        <div id="status" class="save-info">Version sécurisée prête.</div>
+        <div id="status" class="save-info">Tapez sur un effet pour l'allumer ou l'éteindre.</div>
     </div>
 
     <script>
         const knobIds = ['c-sus','c-att','c-lvl','od-drv','od-tne','od-lvl','gain','bass','mid','treble','level','m-rate','m-dep','m-lvl','f2-bass','f2-mid','f2-treble','f2-level','d-fdb','d-lvl','rev-val','out-lvl'];
-        const typeIds = ['compType', 'oddsType', 'ampType', 'modType', 'fx2Type', 'dlyType', 'revType', 'pfxType'];
+        const typeIds = ['compType', 'oddsType', 'ampType', 'modType', 'dlyType', 'revType', 'pfxType'];
         
-        // FUSION DES VERSIONS : On cherche partout pour ne rien perdre
-        let myLibrary = JSON.parse(localStorage.getItem('me80_lib_v6')) || 
-                        JSON.parse(localStorage.getItem('me80_lib_v5')) || 
-                        JSON.parse(localStorage.getItem('me80_lib_final')) || {};
+        let myLibrary = JSON.parse(localStorage.getItem('me80_lib_v7')) || {};
+
+        function toggleEffet(el) {
+            el.classList.toggle('is-on');
+        }
 
         function sync(id, fromInput = false) {
             const range = document.getElementById(id);
@@ -202,9 +216,8 @@
         function syncDelay(fromText) {
             const range = document.getElementById('d-time');
             const text = document.getElementById('d-time-t');
-            if (fromText) {
-                if (!isNaN(text.value) && text.value !== "") range.value = text.value;
-            } else text.value = range.value;
+            if (fromText && !isNaN(text.value) && text.value !== "") range.value = text.value;
+            else if (!fromText) text.value = range.value;
         }
 
         function saveCurrentPatch() {
@@ -212,9 +225,9 @@
             const data = {
                 name: name, pos: document.getElementById('patchPos').value,
                 dTime: document.getElementById('d-time-t').value,
-                vals: {}, types: {}
+                vals: {}, types: {}, states: {}
             };
-            ids_to_save = knobIds; // Correction pour le script
+            
             knobIds.forEach(id => data.vals[id] = document.getElementById(id).value);
             typeIds.forEach(tId => {
                 data.types[tId] = {
@@ -222,10 +235,22 @@
                     num: document.getElementById(tId + '-n').value
                 };
             });
+
+            // Sauvegarder l'état ON/OFF
+            document.querySelectorAll('.pedal-section').forEach(sec => {
+                if(sec.classList.contains('preamp')) data.states.preamp = sec.classList.contains('is-on');
+                if(sec.classList.contains('comp')) data.states.comp = sec.classList.contains('is-on');
+                if(sec.classList.contains('odds')) data.states.odds = sec.classList.contains('is-on');
+                if(sec.classList.contains('mod')) data.states.mod = sec.classList.contains('is-on');
+                if(sec.classList.contains('delay')) data.states.delay = sec.classList.contains('is-on');
+                if(sec.classList.contains('reverb')) data.states.reverb = sec.classList.contains('is-on');
+                if(sec.classList.contains('pfx')) data.states.pfx = sec.classList.contains('is-on');
+            });
+
             myLibrary[name] = data;
-            localStorage.setItem('me80_lib_v6', JSON.stringify(myLibrary));
+            localStorage.setItem('me80_lib_v7', JSON.stringify(myLibrary));
             updateMenu();
-            document.getElementById('status').innerText = "Patch '" + name + "' sauvegardé !";
+            document.getElementById('status').innerText = "Patch '" + name + "' enregistré !";
         }
 
         function updateMenu() {
@@ -243,43 +268,56 @@
             const d = myLibrary[n];
             document.getElementById('patchName').value = d.name;
             document.getElementById('patchPos').value = d.pos || "";
+            
             typeIds.forEach(tId => {
                 if(d.types && d.types[tId]) {
                     document.getElementById(tId).value = d.types[tId].val;
                     document.getElementById(tId + '-n').value = d.types[tId].num || "";
                 }
             });
+
             document.getElementById('d-time-t').value = d.dTime || "";
             document.getElementById('d-time').value = !isNaN(d.dTime) ? d.dTime : 50;
+
             knobIds.forEach(id => {
                 if (d.vals[id]) { 
                     document.getElementById(id).value = d.vals[id]; 
                     document.getElementById(id + '-n').value = d.vals[id];
                 }
             });
+
+            // Charger les états ON/OFF
+            if(d.states) {
+                applyState('.preamp', d.states.preamp);
+                applyState('.comp', d.states.comp);
+                applyState('.odds', d.states.odds);
+                applyState('.mod', d.states.mod);
+                applyState('.delay', d.states.delay);
+                applyState('.reverb', d.states.reverb);
+                applyState('.pfx', d.states.pfx);
+            }
         }
 
-        // --- FONCTIONS DE SÉCURITÉ ---
+        function applyState(selector, isOn) {
+            const el = document.querySelector(selector);
+            if(isOn) el.classList.add('is-on');
+            else el.classList.remove('is-on');
+        }
+
         function exportLib() {
-            const dataStr = JSON.stringify(myLibrary);
-            document.getElementById('io-box').value = dataStr;
+            document.getElementById('io-box').value = JSON.stringify(myLibrary);
             document.getElementById('io-box').select();
             document.execCommand('copy');
-            alert("Toute ta bibliothèque est copiée ! Colle ce texte dans tes Notes pour la sauvegarder.");
+            alert("Copié ! Garde ce texte dans tes Notes.");
         }
 
         function importLib() {
-            const raw = document.getElementById('io-box').value;
-            if(!raw) return alert("Colle ton texte de sauvegarde dans le rectangle d'abord.");
             try {
-                const imported = JSON.parse(raw);
-                myLibrary = imported;
-                localStorage.setItem('me80_lib_v6', JSON.stringify(myLibrary));
+                myLibrary = JSON.parse(document.getElementById('io-box').value);
+                localStorage.setItem('me80_lib_v7', JSON.stringify(myLibrary));
                 updateMenu();
-                alert("Importation réussie ! Tes sons sont de retour.");
-            } catch(e) {
-                alert("Erreur : Le texte collé n'est pas valide.");
-            }
+                alert("Importation réussie !");
+            } catch(e) { alert("Erreur de texte."); }
         }
 
         window.onload = updateMenu;
