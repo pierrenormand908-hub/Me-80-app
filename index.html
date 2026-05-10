@@ -114,7 +114,7 @@
                 <option value="modulate">MODULATE</option><option value="tape">TAPE</option><option value="analog">ANALOG</option><option value="500-6000ms">500-6000ms</option><option value="100-600ms">100-600ms</option><option value="1-99ms">1-99ms</option><option value="reverse">REVERSE</option><option value="cho+delay">CHO+DELAY</option><option value="tempo">TEMPO</option><option value="tera">TERA ECHO</option><option value="loop">PHRASE LOOP</option>
             </select>
             <div class="knobs-grid">
-                <div class="knob-group" style="grid-column: span 1;">
+                <div class="knob-group">
                     <input type="range" id="d-time" min="1" max="6000" step="1" oninput="syncDelay(false)">
                     <input type="text" id="d-time-t" class="ms-input" placeholder="ms ou texte" oninput="syncDelay(true)">
                     <span class="knob-label">Time</span>
@@ -131,6 +131,13 @@
                 <div class="knob-group"><input type="range" id="rev-val" min="0" max="100" oninput="sync('rev-val')"><input type="number" id="rev-val-n" class="value-input" oninput="sync('rev-val',true)"><span class="knob-label">Reverb</span></div>
                 <div class="knob-group"><input type="range" id="out-lvl" min="0" max="100" oninput="sync('out-lvl')"><input type="number" id="out-lvl-n" class="value-input" oninput="sync('out-lvl',true)"><span class="knob-label">Output L</span></div>
             </div>
+        </div>
+
+        <div class="pedal-section" style="border-color: #777;">
+            <span class="section-title">PEDAL FX</span>
+            <select id="pfxType">
+                <option value="freeze">FREEZE</option><option value="-1 oct">-1 OCT</option><option value="+2 oct">+2 OCT</option><option value="+1 oct">+1 OCT</option><option value="voice">VOICE</option><option value="wah">WAH</option><option value="osc delay">OSC DELAY</option><option value="od/ds">OD/DS</option><option value="mod rate">MOD RATE</option><option value="delay level">DELAY LEVEL</option>
+            </select>
         </div>
 
         <div id="status" class="save-info">Prêt.</div>
@@ -162,7 +169,8 @@
                 comp: document.getElementById('compType').value, odds: document.getElementById('oddsType').value,
                 amp: document.getElementById('ampType').value, mod: document.getElementById('modType').value,
                 fx2: document.getElementById('fx2Type').value, dly: document.getElementById('dlyType').value,
-                rev: document.getElementById('revType').value, dTime: document.getElementById('d-time-t').value,
+                rev: document.getElementById('revType').value, pfx: document.getElementById('pfxType').value,
+                dTime: document.getElementById('d-time-t').value,
                 vals: {}
             };
             ids.forEach(id => data.vals[id] = document.getElementById(id).value);
@@ -191,6 +199,7 @@
             document.getElementById('ampType').value = d.amp; document.getElementById('modType').value = d.mod;
             document.getElementById('fx2Type').value = d.fx2; document.getElementById('dlyType').value = d.dly;
             document.getElementById('revType').value = d.rev;
+            if (document.getElementById('pfxType')) document.getElementById('pfxType').value = d.pfx || "freeze";
             document.getElementById('d-time-t').value = d.dTime || "";
             document.getElementById('d-time').value = !isNaN(d.dTime) ? d.dTime : 50;
             ids.forEach(id => {
