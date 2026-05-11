@@ -62,7 +62,8 @@
         .knob-label { display: block; font-size: 0.6rem; text-transform: uppercase; margin-top: 5px; color: #bbb; }
         input[type=range] { width: 75px; cursor: pointer; margin-bottom: 5px; }
         .value-input { width: 55px !important; text-align: center; height: 28px; padding: 2px !important; font-size: 0.8rem !important; border-color: #555 !important; color: var(--boss-yellow) !important; margin-bottom: 0 !important; }
-        .ms-input { width: 110px !important; text-align: center; border-color: #555 !important; font-weight: bold; color: var(--boss-yellow) !important; }
+        /* Style spécial pour rectangles Time/Rate mixtes */
+        .mixed-input { width: 110px !important; text-align: center; border-color: #555 !important; font-weight: bold; color: var(--boss-yellow) !important; margin-top: 2px; }
         .save-info { font-size: 0.7rem; color: #666; padding-bottom: 20px; text-align: center; }
     </style>
 </head>
@@ -137,7 +138,11 @@
                 <input type="number" id="modType-n" class="type-num-input" placeholder="#">
             </div>
             <div class="knobs-grid" onclick="event.stopPropagation()">
-                <div class="knob-group"><input type="range" id="m-rate" min="0" max="100" oninput="sync('m-rate')"><input type="number" id="m-rate-n" class="value-input" oninput="sync('m-rate',true)"><span class="knob-label">Rate</span></div>
+                <div class="knob-group">
+                    <input type="range" id="m-rate" min="0" max="100" oninput="syncRate(false)">
+                    <input type="text" id="m-rate-t" class="mixed-input" placeholder="0-100 / texte" oninput="syncRate(true)">
+                    <span class="knob-label">Rate</span>
+                </div>
                 <div class="knob-group"><input type="range" id="m-dep" min="0" max="100" oninput="sync('m-dep')"><input type="number" id="m-dep-n" class="value-input" oninput="sync('m-dep',true)"><span class="knob-label">Depth</span></div>
                 <div class="knob-group"><input type="range" id="m-lvl" min="0" max="100" oninput="sync('m-lvl')"><input type="number" id="m-lvl-n" class="value-input" oninput="sync('m-lvl',true)"><span class="knob-label">Level</span></div>
             </div>
@@ -170,7 +175,7 @@
             <div class="knobs-grid" onclick="event.stopPropagation()">
                 <div class="knob-group">
                     <input type="range" id="d-time" min="1" max="6000" step="1" oninput="syncDelay(false)">
-                    <input type="text" id="d-time-t" class="ms-input" placeholder="ms / texte" oninput="syncDelay(true)">
+                    <input type="text" id="d-time-t" class="mixed-input" placeholder="ms / texte" oninput="syncDelay(true)">
                     <span class="knob-label">Time</span>
                 </div>
                 <div class="knob-group"><input type="range" id="d-fdb" min="0" max="100" oninput="sync('d-fdb')"><input type="number" id="d-fdb-n" class="value-input" oninput="sync('d-fdb',true)"><span class="knob-label">Feedback</span></div>
@@ -209,14 +214,14 @@
             </div>
         </div>
 
-        <div id="status" class="save-info">Tapez sur un effet pour l'allumer ou l'éteindre.</div>
+        <div id="status" class="save-info">Rate de modulation maintenant ajustable par texte.</div>
     </div>
 
     <script>
-        const knobIds = ['c-sus','c-att','c-lvl','od-drv','od-tne','od-lvl','gain','bass','mid','treble','level','m-rate','m-dep','m-lvl','f2-bass','f2-mid','f2-treble','f2-level','d-fdb','d-lvl','rev-val','out-lvl'];
+        const knobIds = ['c-sus','c-att','c-lvl','od-drv','od-tne','od-lvl','gain','bass','mid','treble','level','m-dep','m-lvl','f2-bass','f2-mid','f2-treble','f2-level','d-fdb','d-lvl','rev-val','out-lvl'];
         const typeIds = ['compType', 'oddsType', 'ampType', 'modType', 'fx2Type', 'dlyType', 'revType', 'pfxType'];
         
-        let myLibrary = JSON.parse(localStorage.getItem('me80_lib_v8')) || {};
+        let myLibrary = JSON.parse(localStorage.getItem('me80_lib_v9')) || {};
 
         function toggleEffet(el) { el.classList.toggle('is-on'); }
 
@@ -234,11 +239,19 @@
             else if (!fromText) text.value = range.value;
         }
 
+        function syncRate(fromText) {
+            const range = document.getElementById('m-rate');
+            const text = document.getElementById('m-rate-t');
+            if (fromText && !isNaN(text.value) && text.value !== "") range.value = text.value;
+            else if (!fromText) text.value = range.value;
+        }
+
         function saveCurrentPatch() {
             const name = document.getElementById('patchName').value || "Sans titre";
             const data = {
                 name: name, pos: document.getElementById('patchPos').value,
                 dTime: document.getElementById('d-time-t').value,
+                mRateText: document.getElementById('m-rate-t').value,
                 vals: {}, types: {}, states: {}
             };
             knobIds.forEach(id => data.vals[id] = document.getElementById(id).value);
@@ -253,7 +266,7 @@
                 types.forEach(t => { if(sec.classList.contains(t)) data.states[t] = sec.classList.contains('is-on'); });
             });
             myLibrary[name] = data;
-            localStorage.setItem('me80_lib_v8', JSON.stringify(myLibrary));
+            localStorage.setItem('me80_lib_v9', JSON.stringify(myLibrary));
             updateMenu();
             document.getElementById('status').innerText = "Patch '" + name + "' enregistré !";
         }
@@ -281,6 +294,9 @@
             });
             document.getElementById('d-time-t').value = d.dTime || "";
             document.getElementById('d-time').value = !isNaN(d.dTime) ? d.dTime : 50;
+            document.getElementById('m-rate-t').value = d.mRateText || "";
+            document.getElementById('m-rate').value = !isNaN(d.mRateText) ? d.mRateText : 50;
+            
             knobIds.forEach(id => {
                 if (d.vals[id]) { document.getElementById(id).value = d.vals[id]; document.getElementById(id + '-n').value = d.vals[id]; }
             });
@@ -296,16 +312,16 @@
             document.getElementById('io-box').value = JSON.stringify(myLibrary);
             document.getElementById('io-box').select();
             document.execCommand('copy');
-            alert("Bibliothèque copiée !");
+            alert("Bibliothèque copiée dans le presse-papiers !");
         }
 
         function importLib() {
             try {
                 myLibrary = JSON.parse(document.getElementById('io-box').value);
-                localStorage.setItem('me80_lib_v8', JSON.stringify(myLibrary));
+                localStorage.setItem('me80_lib_v9', JSON.stringify(myLibrary));
                 updateMenu();
                 alert("Importation réussie !");
-            } catch(e) { alert("Erreur."); }
+            } catch(e) { alert("Erreur de format."); }
         }
 
         window.onload = updateMenu;
