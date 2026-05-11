@@ -28,7 +28,6 @@
         
         .section-title { font-weight: bold; font-size: 0.9rem; margin-bottom: 12px; display: block; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; text-transform: uppercase; color: #555; }
 
-        /* États ON */
         .is-on { border-top-width: 8px; }
         .is-on.preamp { border-color: var(--boss-orange); }
         .is-on.preamp .section-title { color: var(--boss-orange); }
@@ -62,7 +61,6 @@
         .knob-label { display: block; font-size: 0.6rem; text-transform: uppercase; margin-top: 5px; color: #bbb; }
         input[type=range] { width: 75px; cursor: pointer; margin-bottom: 5px; }
         .value-input { width: 55px !important; text-align: center; height: 28px; padding: 2px !important; font-size: 0.8rem !important; border-color: #555 !important; color: var(--boss-yellow) !important; margin-bottom: 0 !important; }
-        /* Style spécial pour rectangles Time/Rate mixtes */
         .mixed-input { width: 110px !important; text-align: center; border-color: #555 !important; font-weight: bold; color: var(--boss-yellow) !important; margin-top: 2px; }
         .save-info { font-size: 0.7rem; color: #666; padding-bottom: 20px; text-align: center; }
     </style>
@@ -207,38 +205,34 @@
 
         <div class="pedal-section" style="border-top: 2px dashed #666; cursor: default;">
             <span class="section-title" style="color: white;">Sauvegarde / Export</span>
-            <textarea id="io-box" rows="2" placeholder="Code de secours..."></textarea>
+            <textarea id="io-box" rows="2" placeholder="Colle ton texte ici..."></textarea>
             <div style="display: flex; gap: 8px;">
                 <button onclick="exportLib()" class="btn-sec">EXPORTER</button>
                 <button onclick="importLib()" class="btn-sec" style="background: var(--boss-green); color: black;">IMPORTER</button>
             </div>
         </div>
 
-        <div id="status" class="save-info">Rate de modulation maintenant ajustable par texte.</div>
+        <div id="status" class="save-info">Pret.</div>
     </div>
 
     <script>
         const knobIds = ['c-sus','c-att','c-lvl','od-drv','od-tne','od-lvl','gain','bass','mid','treble','level','m-dep','m-lvl','f2-bass','f2-mid','f2-treble','f2-level','d-fdb','d-lvl','rev-val','out-lvl'];
         const typeIds = ['compType', 'oddsType', 'ampType', 'modType', 'fx2Type', 'dlyType', 'revType', 'pfxType'];
-        
         let myLibrary = JSON.parse(localStorage.getItem('me80_lib_v9')) || {};
 
         function toggleEffet(el) { el.classList.toggle('is-on'); }
-
         function sync(id, fromInput = false) {
             const range = document.getElementById(id);
             const num = document.getElementById(id + '-n');
             if (fromInput) range.value = num.value;
-            else num.value = range.value;
+            else if(num) num.value = range.value;
         }
-
         function syncDelay(fromText) {
             const range = document.getElementById('d-time');
             const text = document.getElementById('d-time-t');
             if (fromText && !isNaN(text.value) && text.value !== "") range.value = text.value;
             else if (!fromText) text.value = range.value;
         }
-
         function syncRate(fromText) {
             const range = document.getElementById('m-rate');
             const text = document.getElementById('m-rate-t');
@@ -256,10 +250,7 @@
             };
             knobIds.forEach(id => data.vals[id] = document.getElementById(id).value);
             typeIds.forEach(tId => {
-                data.types[tId] = {
-                    val: document.getElementById(tId).value,
-                    num: document.getElementById(tId + '-n').value
-                };
+                data.types[tId] = { val: document.getElementById(tId).value, num: document.getElementById(tId + '-n').value };
             });
             document.querySelectorAll('.pedal-section').forEach(sec => {
                 const types = ['preamp','comp','odds','mod','eqfx2','delay','reverb','pfx'];
@@ -268,7 +259,6 @@
             myLibrary[name] = data;
             localStorage.setItem('me80_lib_v9', JSON.stringify(myLibrary));
             updateMenu();
-            document.getElementById('status').innerText = "Patch '" + name + "' enregistré !";
         }
 
         function updateMenu() {
@@ -294,11 +284,10 @@
             });
             document.getElementById('d-time-t').value = d.dTime || "";
             document.getElementById('d-time').value = !isNaN(d.dTime) ? d.dTime : 50;
-            document.getElementById('m-rate-t').value = d.mRateText || "";
-            document.getElementById('m-rate').value = !isNaN(d.mRateText) ? d.mRateText : 50;
-            
+            document.getElementById('m-rate-t').value = d.mRateText || d.vals['m-rate'] || "50";
+            document.getElementById('m-rate').value = !isNaN(document.getElementById('m-rate-t').value) ? document.getElementById('m-rate-t').value : 50;
             knobIds.forEach(id => {
-                if (d.vals[id]) { document.getElementById(id).value = d.vals[id]; document.getElementById(id + '-n').value = d.vals[id]; }
+                if (d.vals && d.vals[id]) { document.getElementById(id).value = d.vals[id]; document.getElementById(id + '-n').value = d.vals[id]; }
             });
             if(d.states) { Object.keys(d.states).forEach(k => { applyState('.' + k, d.states[k]); }); }
         }
@@ -309,21 +298,23 @@
         }
 
         function exportLib() {
-            document.getElementById('io-box').value = JSON.stringify(myLibrary);
+            document.getElementById('io-box').value = "Mes Patches ME-80 " + JSON.stringify(myLibrary);
             document.getElementById('io-box').select();
             document.execCommand('copy');
-            alert("Bibliothèque copiée dans le presse-papiers !");
+            alert("Bibliothèque copiée !");
         }
 
         function importLib() {
             try {
-                myLibrary = JSON.parse(document.getElementById('io-box').value);
+                let raw = document.getElementById('io-box').value;
+                // Nettoyage automatique du texte
+                let clean = raw.substring(raw.indexOf('{')); 
+                myLibrary = JSON.parse(clean);
                 localStorage.setItem('me80_lib_v9', JSON.stringify(myLibrary));
                 updateMenu();
-                alert("Importation réussie !");
-            } catch(e) { alert("Erreur de format."); }
+                alert("Importation réussie ! Vos " + Object.keys(myLibrary).length + " sons sont là.");
+            } catch(e) { alert("Erreur de format. Assure-toi de copier tout le texte."); }
         }
-
         window.onload = updateMenu;
     </script>
 </body>
