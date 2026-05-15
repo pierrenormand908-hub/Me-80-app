@@ -54,6 +54,7 @@
 
         input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 8px; background: #252525; color: white; border: 1px solid #444; border-radius: 5px; margin-bottom: 8px; font-size: 0.9rem; box-sizing: border-box; }
         button { width: 100%; padding: 10px; background: var(--boss-yellow); color: black; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .btn-delete { background: var(--boss-red); color: white; margin-top: 8px; font-size: 0.75rem; padding: 6px; }
         .btn-sec { background: #444; color: white; font-size: 0.8rem; padding: 5px; margin-top: 10px; }
         
         .knobs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(75px, 1fr)); gap: 10px; justify-items: center; }
@@ -76,6 +77,7 @@
                 <div style="flex: 1;"><input type="text" id="patchPos" placeholder="U1-1"></div>
             </div>
             <button onclick="saveCurrentPatch()">ENREGISTRER CE PATCH</button>
+            <button id="delBtn" onclick="deletePatch()" class="btn-delete" style="display:none;">SUPPRIMER CE PATCH</button>
         </div>
     </div>
 
@@ -212,7 +214,7 @@
             </div>
         </div>
 
-        <div id="status" class="save-info">Pret.</div>
+        <div id="status" class="save-info">Gérez vos patchs en toute simplicité.</div>
     </div>
 
     <script>
@@ -259,6 +261,21 @@
             myLibrary[name] = data;
             localStorage.setItem('me80_lib_v9', JSON.stringify(myLibrary));
             updateMenu();
+            document.getElementById('status').innerText = "Patch enregistré !";
+        }
+
+        function deletePatch() {
+            const name = document.getElementById('savedPatches').value;
+            if(!name) return;
+            if(confirm("Voulez-vous vraiment supprimer le patch '" + name + "' ?")) {
+                delete myLibrary[name];
+                localStorage.setItem('me80_lib_v9', JSON.stringify(myLibrary));
+                document.getElementById('patchName').value = "";
+                document.getElementById('patchPos').value = "";
+                updateMenu();
+                document.getElementById('delBtn').style.display = "none";
+                document.getElementById('status').innerText = "Patch supprimé.";
+            }
         }
 
         function updateMenu() {
@@ -272,7 +289,12 @@
         }
 
         function loadSelectedPatch() {
-            const n = document.getElementById('savedPatches').value; if (!n) return;
+            const n = document.getElementById('savedPatches').value;
+            if (!n) {
+                document.getElementById('delBtn').style.display = "none";
+                return;
+            }
+            document.getElementById('delBtn').style.display = "block";
             const d = myLibrary[n];
             document.getElementById('patchName').value = d.name;
             document.getElementById('patchPos').value = d.pos || "";
@@ -307,13 +329,12 @@
         function importLib() {
             try {
                 let raw = document.getElementById('io-box').value;
-                // Nettoyage automatique du texte
                 let clean = raw.substring(raw.indexOf('{')); 
                 myLibrary = JSON.parse(clean);
                 localStorage.setItem('me80_lib_v9', JSON.stringify(myLibrary));
                 updateMenu();
-                alert("Importation réussie ! Vos " + Object.keys(myLibrary).length + " sons sont là.");
-            } catch(e) { alert("Erreur de format. Assure-toi de copier tout le texte."); }
+                alert("Importation réussie !");
+            } catch(e) { alert("Erreur de format."); }
         }
         window.onload = updateMenu;
     </script>
